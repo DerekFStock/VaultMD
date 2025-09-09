@@ -4,13 +4,11 @@
 //
 //  Created by Derek Stock on 9/9/25.
 //
-
-
 import SwiftUI
 import UniformTypeIdentifiers
 
 struct FilePicker: UIViewControllerRepresentable {
-    @Binding var selectedURLs: [URL]
+    let urlsSelected: ([URL]) -> Void  // Callback for selected URLs
     @Environment(\.dismiss) private var dismiss
     
     func makeCoordinator() -> Coordinator {
@@ -37,7 +35,8 @@ struct FilePicker: UIViewControllerRepresentable {
         }
         
         func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-            parent.selectedURLs = urls
+            print("DEBUG: Selected \(urls)")
+            parent.urlsSelected(urls)  // Call callback
             parent.dismiss()
         }
         
