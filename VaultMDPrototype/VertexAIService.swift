@@ -40,7 +40,12 @@ class VertexAIService {
     
     func generateOpNoteAndCodes(mergedText: String) async throws -> String {
         let prompt = """
-        Generate op note and billing ICD-10 and CPT codes for billing purposes and medical records documentation
+        Generate op note and billing ICD-10 and CPT codes for billing purposes and medical records documentation.
+        
+        Output in structured format:
+        - Operative Note: [Full narrative]
+        - ICD-10 Codes: [List, e.g., L03.90 (cellulitis)]
+        - CPT Codes: [List, e.g., 11104 (punch biopsy)]
         
         Procedure Details:
         \(mergedText)

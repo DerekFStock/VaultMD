@@ -270,13 +270,57 @@ struct ResultsView: View {
                 } else if let output = viewModel.generatedOutput {
                     Text("Generated Op Note & Codes:")
                         .font(.headline)
+                    
                     ScrollView {
-                        Text(output)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.green.opacity(0.1))
-                            .cornerRadius(8)
-                            .accessibilityLabel("AI-generated operative note and codes")
+                        VStack(alignment: .leading, spacing: 16) {
+                            // Operative Note
+                            if let opNote = parseSection(from: output, key: "Operative Note:") {
+                                SectionHeader(title: "Operative Note")
+                                Text(opNote)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color.blue.opacity(0.1))
+                                    .cornerRadius(8)
+                                    .accessibilityLabel("Operative note")
+                                CopyButton(text: opNote, label: "Copy Op Note")
+                            }
+                            
+                            // ICD-10 Codes
+                            if let icd10 = parseSection(from: output, key: "ICD-10 Codes:") {
+                                SectionHeader(title: "ICD-10 Codes")
+                                Text(icd10)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color.orange.opacity(0.1))
+                                    .cornerRadius(8)
+                                    .accessibilityLabel("ICD-10 codes")
+                                CopyButton(text: icd10, label: "Copy ICD-10 Codes")
+                            }
+                            
+                            // CPT Codes
+                            if let cpt = parseSection(from: output, key: "CPT Codes:") {
+                                SectionHeader(title: "CPT Codes")
+                                Text(cpt)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color.green.opacity(0.1))
+                                    .cornerRadius(8)
+                                    .accessibilityLabel("CPT codes")
+                                CopyButton(text: cpt, label: "Copy CPT Codes")
+                            }
+                            
+                            // Full Output Fallback
+                            Divider()
+                            SectionHeader(title: "Full Output")
+                            Text(output)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(8)
+                                .accessibilityLabel("Full AI-generated output")
+                            CopyButton(text: output, label: "Copy Full Output")
+                        }
+                        .padding(.horizontal)
                     }
                     
                     Button("Re-Process") {
@@ -301,4 +345,58 @@ struct ResultsView: View {
             .accessibilityLabel("Results view")
         }
     }
+    
+    private func parseSection(from output: String, key: String) -> String? {
+        // Updated regex to capture until next section or end
+        let pattern = "\(key)\\s*([\\s\\S]*?)(?=(?:Operative Note:|ICD-10 Codes:|CPT Codes:|\\z))"
+        if let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) {
+            if let match = regex.firstMatch(in: output, range: NSRange(location: 0, length: output.utf16.count)) {
+                let range = match.range(at: 1)
+                if let swiftRange = Range(range, in: output) {
+                    let section = String(output[swiftRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+                    return section.isEmpty ? nil : section
+                }
+            }
+        }
+        return nil
+    }
 }
+
+// Helper for section headers
+struct SectionHeader: View {
+    let title: String
+    
+    var body: some View {
+        Text(title)
+            .font(.subheadline)
+            .fontWeight(.semibold)
+            .foregroundColor(.primary)
+            .padding(.bottom, 4)
+            .accessibilityLabel("\(title) section")
+    }
+}
+
+// Helper for copy buttons
+struct CopyButton: View {
+    let text: String
+    let label: String
+    
+    var body: some View {
+        Button(action: {
+            UIPasteboard.general.string = text
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }) {
+            HStack {
+                Text(label)
+                Spacer()
+                Image(systemName: "doc.on.clipboard")
+                    .foregroundColor(.blue)
+            }
+            .padding(.vertical, 4)
+        }
+        .buttonStyle(.bordered)
+        .tint(.blue)
+        .accessibilityLabel(label)
+    }
+}
+
