@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "vaultmd",
+  "private_key_id": "2ed1a19a4f87ea8554161792e2ddb0581666d986",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDEVdIa8kK+UrYK\njpNT6C5ltLbTXbo3vNqnwyMm1O43iHmRRxRCW6pxs5V/Fc3YnjFGBx1h/PgT8Wck\ngKswpKCYlRPl2DUrIVuHL2LdwFQM2BvHvWJnYWW5m+Is5iBSR8GO5Cfwar3IKKkk\nvKROCsjvD/D1pCIRBwFm0cF8fbLOIbUMFY9g5wp72ALn4+Fj7kZUbXlde2bifsUh\nQ0xKFLwU9mqb8vwZaZlHaNblJms34xb9mloMa8ZXf9omtSEm1Wz5DoIjTIjgK5kq\nt37/7CXMUey/WmFgfbEJI5Dg8CpaMBLrYaKjBls24bcC4AG7GD0mKwkGc/0LWgxW\nzzkVtBBdAgMBAAECggEAC+giflTb3Fv6w0gjQi7uBWgAwG/KN9AhuJPagWPfcIm7\nyaY0YdPaUdvwwIzLd4wcc+FBlGw5hUgaF7of56rMPISp+MH0c4Gp4dhrWARudHr0\nsFfZbGiZOTjtbgikxCiq4eYPUALBMK7alypDkqIPzoO6esMx97Njj98/qzOaUOrZ\n+rHeRgXy3R6RGCAGeI2e1HFjMSAwLY0AB8WmfYhO4DbfassWL7eYcNtJANrC4Ncd\n380TR4No/8rmrtfMHtf9MxU+HFICbnEd3VoUQnXvWFU1KGD4fXUozohURcmAQkDi\njL9FhKWgRMXNX7wfo73mTsOBpJ05vnpeNt95f/FOoQKBgQD/MLzRX3P2u4fQ13mQ\nQs+W64vRBgkBPLUZvlpTQppLvemabaoyKWIPlM43u7fIg7IqIWn+fNpKNx474G7R\nKY4bUBJw30Y6Sk4DWFb8HC+PNzo/+Z5Yt88U32jTqW6qE3S+WbXC5aNJFesFKNKJ\njc0NaWRPq/ynoGKs+O5E0u7PbQKBgQDE9UggVeClmsxuDN1x2Ew7JPqLKaicelTS\nycMdWFOa6fyjPmMBV+fWci3G3Kt9FN8socWPRt5j7V/heKUgkvY5Ja/0LiZFR/1y\n4YygGOUlr39YKdpAN7p6C5OXC8kfayWOXnn4iwpyflq/R2wIRaurnubWt4QIHKsA\nWHTApBt+sQKBgHntfnoHQnAEAAt/uJx935O7bW1slcbai6kGM0AO1YwU7FWVyjj3\nXtwU/EbS0SfkDK9mka8/VkkZdr+jJy+WzEguhPEbLQHS2N1uSvlgOjUSbSl+CfNX\nt4DAkeR30uE+NIxybo71i4PzDfzEGXwRnYSn837BrREmZ58/vRBzPBktAoGBAMPQ\n7S2g0+Exvw+m4L8gAeJHiIS1HTq9cPnEuKTDPRPmkFOoYfxi7k9JY3OzzxdjmeKg\nz278UXxd8xaSwPFay0vTyVTmUQxOX5BI6Gv/dEr8aYo4yhFQlqhiPBFPGV2QRF2A\nVpmheviL4SMNGj47LktJh01wVOdPwT9tsl4YinFxAoGBAMfcM2gyTssMCj5jDAXz\nU4rmvyUtO5j8dv/Es6WhnCAiBeMcqWHKMp5MjmyRuJFKD9dKpf/AmRbt935mWXSi\nnfU0nLPEPLUI5Dxs4N9W3Vd5dDaDYgxFVgHSVMyhuBaEJZyo+h9S32UUjimy+Ha1\nCw1voHyiyvOX90wnPKQckXKI\n-----END PRIVATE KEY-----\n",
+  "client_email": "vaultmd-vertexai-agent@vaultmd.iam.gserviceaccount.com",
+  "client_id": "105268629009738325842",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/vaultmd-vertexai-agent%40vaultmd.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

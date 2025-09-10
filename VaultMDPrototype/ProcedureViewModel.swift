@@ -4,19 +4,32 @@
 //
 //  Created by Derek Stock on 9/9/25.
 //
-
-
 import SwiftUI
-import Observation  // For @Observable (iOS 17+)
+import Observation
+import FirebaseAI
+import FirebaseCore
 
 @Observable
 class ProcedureViewModel {
     var selectedURLs: [URL] = []
     var mergedText: String = ""
+    var generatedOutput: String?
     var isLoading: Bool = false
+    var isProcessingAI: Bool = false
     var errorMessage: String?
     
-    // Call this after URLs are set
+    private let vertexService: VertexAIService?  // Changed to optional
+    
+    init() {
+        do {
+            self.vertexService = try VertexAIService()
+        } catch {
+            self.vertexService = nil
+            self.errorMessage = "Failed to initialize Vertex AI: \(error.localizedDescription)"
+            print("Vertex init error: \(error)")
+        }
+    }
+    
     func mergeFiles() async {
         guard !selectedURLs.isEmpty else {
             errorMessage = "No files selected."
@@ -28,6 +41,12 @@ class ProcedureViewModel {
         var texts: [String] = []
         
         for url in selectedURLs {
+            guard url.startAccessingSecurityScopedResource() else {
+                texts.append("Error: Cannot access \(url.lastPathComponent)")
+                continue
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+            
             do {
                 let data = try Data(contentsOf: url)
                 if let text = String(data: data, encoding: .utf8) {
@@ -40,19 +59,41 @@ class ProcedureViewModel {
             }
         }
         
-        mergedText = texts.joined(separator: "\n---\n")  // Merge with separator for clarity
+        mergedText = texts.joined(separator: "\n---\n")
         isLoading = false
     }
     
-    // Stub for processing (AI + save) - implement in next iter
+    @MainActor
     func processProcedure() async {
-        // TODO: Build prompt, call Vertex AI, save to Firebase
-        print("Processing: \(mergedText.prefix(100))...")  // Temp log
+        guard !mergedText.isEmpty else {
+            errorMessage = "No text to process."
+            return
+        }
+        
+        guard let vertexService else {
+            errorMessage = "Vertex AI service unavailable."
+            return
+        }
+        
+        isProcessingAI = true
+        errorMessage = nil
+        
+        do {
+            let aiOutput = try await vertexService.generateOpNoteAndCodes(mergedText: mergedText)
+            generatedOutput = aiOutput
+            print("AI Generated: \(aiOutput.prefix(200))...")
+        } catch {
+            errorMessage = "AI Processing failed: \(error.localizedDescription)"
+            print("AI Error: \(error)")
+        }
+        
+        isProcessingAI = false
     }
     
     func clearFiles() {
         selectedURLs = []
         mergedText = ""
+        generatedOutput = nil
         errorMessage = nil
     }
 }

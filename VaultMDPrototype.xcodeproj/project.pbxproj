@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B6497DAD2E7102690030B72C /* OAuth1 in Frameworks */ = {isa = PBXBuildFile; productRef = B6497DAC2E7102690030B72C /* OAuth1 */; };
+		B6497DAF2E7102690030B72C /* OAuth2 in Frameworks */ = {isa = PBXBuildFile; productRef = B6497DAE2E7102690030B72C /* OAuth2 */; };
+		B6497DB12E7102690030B72C /* SwiftyBase64 in Frameworks */ = {isa = PBXBuildFile; productRef = B6497DB02E7102690030B72C /* SwiftyBase64 */; };
+		B6497DB32E7102690030B72C /* TinyHTTPServer in Frameworks */ = {isa = PBXBuildFile; productRef = B6497DB22E7102690030B72C /* TinyHTTPServer */; };
 		B67AA57D2E6637E800DE6E9F /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = B67AA57C2E6637E800DE6E9F /* FirebaseAI */; };
 		B67AA57F2E6637E800DE6E9F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B67AA57E2E6637E800DE6E9F /* FirebaseAuth */; };
 		B67AA5812E6637E800DE6E9F /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = B67AA5802E6637E800DE6E9F /* FirebaseCore */; };
@@ -32,10 +36,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				B67AA57D2E6637E800DE6E9F /* FirebaseAI in Frameworks */,
+				B6497DAF2E7102690030B72C /* OAuth2 in Frameworks */,
 				B67AA5812E6637E800DE6E9F /* FirebaseCore in Frameworks */,
 				B67AA5832E6637E800DE6E9F /* FirebaseDatabase in Frameworks */,
 				B67AA5852E6637E800DE6E9F /* FirebaseFirestore in Frameworks */,
+				B6497DAD2E7102690030B72C /* OAuth1 in Frameworks */,
 				B67AA57F2E6637E800DE6E9F /* FirebaseAuth in Frameworks */,
+				B6497DB12E7102690030B72C /* SwiftyBase64 in Frameworks */,
+				B6497DB32E7102690030B72C /* TinyHTTPServer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +91,10 @@
 				B67AA5802E6637E800DE6E9F /* FirebaseCore */,
 				B67AA5822E6637E800DE6E9F /* FirebaseDatabase */,
 				B67AA5842E6637E800DE6E9F /* FirebaseFirestore */,
+				B6497DAC2E7102690030B72C /* OAuth1 */,
+				B6497DAE2E7102690030B72C /* OAuth2 */,
+				B6497DB02E7102690030B72C /* SwiftyBase64 */,
+				B6497DB22E7102690030B72C /* TinyHTTPServer */,
 			);
 			productName = VaultMDPrototype;
 			productReference = B67AA5612E66370B00DE6E9F /* VaultMDPrototype.app */;
@@ -114,6 +126,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				B67AA57B2E6637E800DE6E9F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				B6497DAB2E7102690030B72C /* XCRemoteSwiftPackageReference "google-auth-library-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B67AA5622E66370B00DE6E9F /* Products */;
@@ -364,6 +377,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		B6497DAB2E7102690030B72C /* XCRemoteSwiftPackageReference "google-auth-library-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleapis/google-auth-library-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.3;
+			};
+		};
 		B67AA57B2E6637E800DE6E9F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -375,6 +396,26 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B6497DAC2E7102690030B72C /* OAuth1 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B6497DAB2E7102690030B72C /* XCRemoteSwiftPackageReference "google-auth-library-swift" */;
+			productName = OAuth1;
+		};
+		B6497DAE2E7102690030B72C /* OAuth2 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B6497DAB2E7102690030B72C /* XCRemoteSwiftPackageReference "google-auth-library-swift" */;
+			productName = OAuth2;
+		};
+		B6497DB02E7102690030B72C /* SwiftyBase64 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B6497DAB2E7102690030B72C /* XCRemoteSwiftPackageReference "google-auth-library-swift" */;
+			productName = SwiftyBase64;
+		};
+		B6497DB22E7102690030B72C /* TinyHTTPServer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B6497DAB2E7102690030B72C /* XCRemoteSwiftPackageReference "google-auth-library-swift" */;
+			productName = TinyHTTPServer;
+		};
 		B67AA57C2E6637E800DE6E9F /* FirebaseAI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B67AA57B2E6637E800DE6E9F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
