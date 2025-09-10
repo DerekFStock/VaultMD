@@ -15,11 +15,18 @@ import PDFKit
 class ProcedureViewModel {
     var selectedURLs: [URL] = []
     var mergedText: String = ""
-    var originalMergedText: String = ""  // New: For reset
+    var originalMergedText: String = ""
     var generatedOutput: String?
     var isLoading: Bool = false
     var isProcessingAI: Bool = false
     var errorMessage: String?
+    var saveStatus: SaveStatus?  // New: For UI feedback
+    
+    enum SaveStatus {
+        case success(String)  // Document ID
+        case error(String)
+        case loading
+    }
     
     private let vertexService: VertexAIService?
     private let firebaseService = FirebaseService()
@@ -84,7 +91,7 @@ class ProcedureViewModel {
         }
         
         mergedText = texts.joined(separator: "\n---\n")
-        originalMergedText = mergedText  // Store for reset
+        originalMergedText = mergedText
         isLoading = false
     }
     
@@ -107,6 +114,7 @@ class ProcedureViewModel {
         
         isProcessingAI = true
         errorMessage = nil
+        saveStatus = .loading  // Start loading status
         
         do {
             let aiOutput = try await vertexService.generateOpNoteAndCodes(mergedText: mergedText)
@@ -117,15 +125,31 @@ class ProcedureViewModel {
             firebaseService.saveProcedure(procedure) { result in
                 switch result {
                 case .success(let docID):
+                    self.saveStatus = .success(docID)
                     print("Saved to Firestore with ID: \(docID)")
+                    // Auto-dismiss after 3 seconds
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        self.saveStatus = nil
+                    }
                 case .failure(let error):
+                    self.saveStatus = .error(error.localizedDescription)
                     self.errorMessage = "Failed to save to Firestore: \(error.localizedDescription)"
                     print("Firestore Error: \(error)")
+                    // Auto-dismiss after 5 seconds
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                        self.saveStatus = nil
+                    }
                 }
             }
         } catch {
             errorMessage = "AI Processing failed: \(error.localizedDescription)"
+            saveStatus = .error(error.localizedDescription)
             print("AI Error: \(error)")
+            isProcessingAI = false
+            // Auto-dismiss after 5 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                self.saveStatus = nil
+            }
         }
         
         isProcessingAI = false
@@ -134,12 +158,13 @@ class ProcedureViewModel {
     func clearFiles() {
         selectedURLs = []
         mergedText = ""
-        originalMergedText = ""  // Reset
+        originalMergedText = ""
         generatedOutput = nil
         errorMessage = nil
+        saveStatus = nil
     }
     
     func resetMergedText() {
-        mergedText = originalMergedText  // Restore original
+        mergedText = originalMergedText
     }
 }

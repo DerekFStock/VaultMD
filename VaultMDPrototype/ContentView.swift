@@ -258,6 +258,62 @@ struct PreviewView: View {
     }
 }
 
+struct StatusBanner: View {
+    let status: ProcedureViewModel.SaveStatus
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        HStack {
+            Image(systemName: statusIcon)
+                .foregroundColor(statusColor)
+            Text(statusMessage)
+                .font(.subheadline)
+                .foregroundColor(statusColor)
+            Spacer()
+            Button("Dismiss") {
+                onDismiss()
+            }
+            .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(statusBackground)
+        .cornerRadius(8)
+        .accessibilityLabel(statusMessage)
+    }
+    
+    var statusIcon: String {
+        switch status {
+        case .success: return "checkmark.circle.fill"
+        case .error: return "xmark.circle.fill"
+        case .loading: return "gearshape.2"
+        }
+    }
+    
+    var statusColor: Color {
+        switch status {
+        case .success: return .green
+        case .error: return .red
+        case .loading: return .blue
+        }
+    }
+    
+    var statusBackground: Color {
+        switch status {
+        case .success: return .green.opacity(0.1)
+        case .error: return .red.opacity(0.1)
+        case .loading: return .blue.opacity(0.1)
+        }
+    }
+    
+    var statusMessage: String {
+        switch status {
+        case .success(let docID): return "Saved to Firestore: \(docID)"
+        case .error(let message): return "Error: \(message)"
+        case .loading: return "Processing..."
+        }
+    }
+}
+
 struct ResultsView: View {
     @Environment(ProcedureViewModel.self) private var viewModel
     @Binding var isProcessing: Bool
@@ -273,7 +329,6 @@ struct ResultsView: View {
                     
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            // Operative Note
                             if let opNote = parseSection(from: output, key: "Operative Note:") {
                                 SectionHeader(title: "Operative Note")
                                 Text(opNote)
@@ -285,7 +340,6 @@ struct ResultsView: View {
                                 CopyButton(text: opNote, label: "Copy Op Note")
                             }
                             
-                            // ICD-10 Codes
                             if let icd10 = parseSection(from: output, key: "ICD-10 Codes:") {
                                 SectionHeader(title: "ICD-10 Codes")
                                 Text(icd10)
@@ -297,7 +351,6 @@ struct ResultsView: View {
                                 CopyButton(text: icd10, label: "Copy ICD-10 Codes")
                             }
                             
-                            // CPT Codes
                             if let cpt = parseSection(from: output, key: "CPT Codes:") {
                                 SectionHeader(title: "CPT Codes")
                                 Text(cpt)
@@ -309,7 +362,6 @@ struct ResultsView: View {
                                 CopyButton(text: cpt, label: "Copy CPT Codes")
                             }
                             
-                            // Full Output Fallback
                             Divider()
                             SectionHeader(title: "Full Output")
                             Text(output)
@@ -338,6 +390,14 @@ struct ResultsView: View {
                         .font(.headline)
                         .foregroundColor(.secondary)
                 }
+                
+                // Status Banner
+                if let status = viewModel.saveStatus {
+                    StatusBanner(status: status) {
+                        viewModel.saveStatus = nil
+                    }
+                }
+                
                 Spacer()
             }
             .padding()
@@ -347,7 +407,6 @@ struct ResultsView: View {
     }
     
     private func parseSection(from output: String, key: String) -> String? {
-        // Updated regex to capture until next section or end
         let pattern = "\(key)\\s*([\\s\\S]*?)(?=(?:Operative Note:|ICD-10 Codes:|CPT Codes:|\\z))"
         if let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) {
             if let match = regex.firstMatch(in: output, range: NSRange(location: 0, length: output.utf16.count)) {
@@ -362,7 +421,6 @@ struct ResultsView: View {
     }
 }
 
-// Helper for section headers
 struct SectionHeader: View {
     let title: String
     
@@ -376,7 +434,6 @@ struct SectionHeader: View {
     }
 }
 
-// Helper for copy buttons
 struct CopyButton: View {
     let text: String
     let label: String
@@ -399,4 +456,5 @@ struct CopyButton: View {
         .accessibilityLabel(label)
     }
 }
+
 
