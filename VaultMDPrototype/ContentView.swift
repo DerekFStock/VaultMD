@@ -50,7 +50,7 @@ struct FilesView: View {
     @Environment(ProcedureViewModel.self) private var viewModel
     @Binding var showingPicker: Bool
     @Binding var isProcessing: Bool
-    @State private var previewFileURL: URL?  // For modal preview
+    @State private var previewFileURL: URL?
     @State private var showingPreview = false
     
     var body: some View {
@@ -90,7 +90,7 @@ struct FilesView: View {
                         }
                         .onDelete { indexSet in
                             viewModel.selectedURLs.remove(atOffsets: indexSet)
-                            Task { await viewModel.mergeFiles() } // Re-merge after deletion
+                            Task { await viewModel.mergeFiles() }
                         }
                     }
                     .listStyle(.plain)
@@ -169,7 +169,6 @@ struct FilesView: View {
     }
 }
 
-// New view for file preview modal
 struct FilePreviewView: View {
     let url: URL
     
@@ -216,6 +215,7 @@ struct PreviewView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
+                @Bindable var previewViewModel = viewModel  // Added for binding
                 if viewModel.isLoading {
                     ProgressView("Merging files...")
                 } else if viewModel.mergedText.isEmpty {
@@ -224,13 +224,30 @@ struct PreviewView: View {
                         .foregroundColor(.secondary)
                 } else {
                     ScrollView {
-                        Text(viewModel.mergedText)
+                        TextEditor(text: $previewViewModel.mergedText)  // Fixed binding
                             .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(maxWidth: .infinity, minHeight: 300)
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(8)
-                            .accessibilityLabel("Merged procedure notes")
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                            )
+                            .accessibilityLabel("Editable merged procedure notes")
+                        
+                        Text("Characters: \(viewModel.mergedText.count) (Max ~1M for AI)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 4)
                     }
+                    
+                    Button("Reset Text") {
+                        viewModel.resetMergedText()
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.orange)
+                    .disabled(viewModel.mergedText == viewModel.originalMergedText)
                 }
                 Spacer()
             }

@@ -9,12 +9,13 @@ import Observation
 import FirebaseAI
 import FirebaseCore
 import FirebaseFirestore
-import PDFKit  // Add for PDF text extraction
+import PDFKit
 
 @Observable
 class ProcedureViewModel {
     var selectedURLs: [URL] = []
     var mergedText: String = ""
+    var originalMergedText: String = ""  // New: For reset
     var generatedOutput: String?
     var isLoading: Bool = false
     var isProcessingAI: Bool = false
@@ -83,6 +84,7 @@ class ProcedureViewModel {
         }
         
         mergedText = texts.joined(separator: "\n---\n")
+        originalMergedText = mergedText  // Store for reset
         isLoading = false
     }
     
@@ -132,7 +134,12 @@ class ProcedureViewModel {
     func clearFiles() {
         selectedURLs = []
         mergedText = ""
+        originalMergedText = ""  // Reset
         generatedOutput = nil
         errorMessage = nil
+    }
+    
+    func resetMergedText() {
+        mergedText = originalMergedText  // Restore original
     }
 }
