@@ -9,6 +9,7 @@ import Observation
 import FirebaseAI
 import FirebaseCore
 import FirebaseFirestore
+import PDFKit  // Add for PDF text extraction
 
 @Observable
 class ProcedureViewModel {
@@ -50,11 +51,31 @@ class ProcedureViewModel {
             defer { url.stopAccessingSecurityScopedResource() }
             
             do {
-                let data = try Data(contentsOf: url)
-                if let text = String(data: data, encoding: .utf8) {
-                    texts.append(text)
+                if url.pathExtension.lowercased() == "txt" {
+                    let data = try Data(contentsOf: url)
+                    if let text = String(data: data, encoding: .utf8) {
+                        texts.append(text)
+                    } else {
+                        texts.append("Error: Failed to decode text from \(url.lastPathComponent)")
+                    }
+                } else if url.pathExtension.lowercased() == "pdf" {
+                    guard let pdfDocument = PDFDocument(url: url) else {
+                        texts.append("Error: Failed to load PDF \(url.lastPathComponent)")
+                        continue
+                    }
+                    var pdfText = ""
+                    for pageIndex in 0..<pdfDocument.pageCount {
+                        if let page = pdfDocument.page(at: pageIndex), let pageText = page.string {
+                            pdfText += pageText
+                        }
+                    }
+                    if pdfText.isEmpty {
+                        texts.append("Error: No text extracted from PDF \(url.lastPathComponent)")
+                    } else {
+                        texts.append(pdfText)
+                    }
                 } else {
-                    texts.append("Error reading file: \(url.lastPathComponent)")
+                    texts.append("Error: Unsupported file type \(url.lastPathComponent)")
                 }
             } catch {
                 texts.append("Error: \(error.localizedDescription) for \(url.lastPathComponent)")
@@ -90,7 +111,6 @@ class ProcedureViewModel {
             generatedOutput = aiOutput
             print("AI Generated: \(aiOutput.prefix(200))...")
             
-            // Save to Firestore
             let procedure = ProcedureData(originalText: mergedText, generatedOutput: aiOutput)
             firebaseService.saveProcedure(procedure) { result in
                 switch result {

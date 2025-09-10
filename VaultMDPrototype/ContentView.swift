@@ -11,19 +11,19 @@ import FirebaseCore
 struct ContentView: View {
     @State private var viewModel = ProcedureViewModel()
     @State private var showingPicker = false
-    @State private var isProcessing = false  // Debounce flag
+    @State private var isProcessing = false
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
                 if viewModel.selectedURLs.isEmpty {
-                    Button("Select .txt Files") {
+                    Button("Select Files (.txt or .pdf)") {
                         showingPicker = true
                     }
                     .buttonStyle(.borderedProminent)
                     .fileImporter(
                         isPresented: $showingPicker,
-                        allowedContentTypes: [.plainText],
+                        allowedContentTypes: [.plainText, .pdf],  // Add .pdf
                         allowsMultipleSelection: true
                     ) { result in
                         switch result {
@@ -73,7 +73,7 @@ struct ContentView: View {
                     }
                     
                     Button(viewModel.generatedOutput == nil ? "Process with AI & Save to Firebase" : "Re-Process") {
-                        guard !isProcessing else { return }  // Debounce
+                        guard !isProcessing else { return }
                         isProcessing = true
                         Task {
                             await viewModel.processProcedure()
@@ -89,7 +89,7 @@ struct ContentView: View {
                     .buttonStyle(.bordered)
                     .fileImporter(
                         isPresented: $showingPicker,
-                        allowedContentTypes: [.plainText],
+                        allowedContentTypes: [.plainText, .pdf],  // Add .pdf
                         allowsMultipleSelection: true
                     ) { result in
                         switch result {
@@ -119,4 +119,3 @@ struct ContentView: View {
         }
     }
 }
-
