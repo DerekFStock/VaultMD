@@ -7,6 +7,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import FirebaseCore
+import PDFKit
 
 struct ContentView: View {
     @State private var viewModel = ProcedureViewModel()
@@ -49,6 +50,8 @@ struct FilesView: View {
     @Environment(ProcedureViewModel.self) private var viewModel
     @Binding var showingPicker: Bool
     @Binding var isProcessing: Bool
+    @State private var previewFileURL: URL?  // For modal preview
+    @State private var showingPreview = false
     
     var body: some View {
         NavigationStack {
@@ -58,8 +61,40 @@ struct FilesView: View {
                         .font(.headline)
                         .foregroundColor(.secondary)
                 } else {
-                    Text("Files Selected: \(viewModel.selectedURLs.count)")
-                        .font(.headline)
+                    List {
+                        ForEach(viewModel.selectedURLs, id: \.self) { url in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(url.lastPathComponent)
+                                        .font(.body)
+                                    Text("Type: \(url.pathExtension.uppercased())")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    if let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                                        Text("Size: \(String(format: "%.2f", Double(size) / 1024)) KB")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                Spacer()
+                                Button(action: {
+                                    previewFileURL = url
+                                    showingPreview = true
+                                }) {
+                                    Image(systemName: "eye")
+                                        .foregroundColor(.blue)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel("Preview file \(url.lastPathComponent)")
+                            }
+                        }
+                        .onDelete { indexSet in
+                            viewModel.selectedURLs.remove(atOffsets: indexSet)
+                            Task { await viewModel.mergeFiles() } // Re-merge after deletion
+                        }
+                    }
+                    .listStyle(.plain)
+                    .accessibilityLabel("List of selected files")
                 }
                 
                 Button("Select Files (.txt or .pdf)") {
@@ -125,6 +160,52 @@ struct FilesView: View {
             .padding()
             .navigationTitle("Select Files")
             .accessibilityLabel("File selection view")
+            .sheet(isPresented: $showingPreview) {
+                if let url = previewFileURL {
+                    FilePreviewView(url: url)
+                }
+            }
+        }
+    }
+}
+
+// New view for file preview modal
+struct FilePreviewView: View {
+    let url: URL
+    
+    var body: some View {
+        NavigationStack {
+            VStack {
+                ScrollView {
+                    if url.pathExtension.lowercased() == "txt" {
+                        if let data = try? Data(contentsOf: url),
+                           let text = String(data: data, encoding: .utf8) {
+                            Text(text)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            Text("Error: Unable to read text file")
+                                .foregroundColor(.red)
+                        }
+                    } else if url.pathExtension.lowercased() == "pdf" {
+                        if let pdfDocument = PDFDocument(url: url) {
+                            Text(pdfDocument.string ?? "No text extracted")
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            Text("Error: Unable to load PDF")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+                Spacer()
+            }
+            .padding()
+            .navigationTitle(url.lastPathComponent)
+            .navigationBarItems(trailing: Button("Done") {
+                // Dismiss handled by .sheet
+            })
+            .accessibilityLabel("Preview of file \(url.lastPathComponent)")
         }
     }
 }
@@ -204,4 +285,3 @@ struct ResultsView: View {
         }
     }
 }
-
