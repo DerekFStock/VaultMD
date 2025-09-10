@@ -8,6 +8,7 @@ import SwiftUI
 import Observation
 import FirebaseAI
 import FirebaseCore
+import FirebaseFirestore
 
 @Observable
 class ProcedureViewModel {
@@ -18,7 +19,8 @@ class ProcedureViewModel {
     var isProcessingAI: Bool = false
     var errorMessage: String?
     
-    private let vertexService: VertexAIService?  // Changed to optional
+    private let vertexService: VertexAIService?
+    private let firebaseService = FirebaseService()
     
     init() {
         do {
@@ -75,6 +77,11 @@ class ProcedureViewModel {
             return
         }
         
+        guard !isProcessingAI else {
+            print("DEBUG: Skipping duplicate AI call")
+            return
+        }
+        
         isProcessingAI = true
         errorMessage = nil
         
@@ -82,6 +89,18 @@ class ProcedureViewModel {
             let aiOutput = try await vertexService.generateOpNoteAndCodes(mergedText: mergedText)
             generatedOutput = aiOutput
             print("AI Generated: \(aiOutput.prefix(200))...")
+            
+            // Save to Firestore
+            let procedure = ProcedureData(originalText: mergedText, generatedOutput: aiOutput)
+            firebaseService.saveProcedure(procedure) { result in
+                switch result {
+                case .success(let docID):
+                    print("Saved to Firestore with ID: \(docID)")
+                case .failure(let error):
+                    self.errorMessage = "Failed to save to Firestore: \(error.localizedDescription)"
+                    print("Firestore Error: \(error)")
+                }
+            }
         } catch {
             errorMessage = "AI Processing failed: \(error.localizedDescription)"
             print("AI Error: \(error)")

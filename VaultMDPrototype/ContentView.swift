@@ -5,32 +5,32 @@
 //  Created by Derek Stock on 9/1/25.
 //
 import SwiftUI
-import UniformTypeIdentifiers  // For UTType.plainText
+import UniformTypeIdentifiers
+import FirebaseCore
 
 struct ContentView: View {
     @State private var viewModel = ProcedureViewModel()
-    @State private var showingPicker = false  // Triggers the importer
+    @State private var showingPicker = false
+    @State private var isProcessing = false  // Debounce flag
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
                 if viewModel.selectedURLs.isEmpty {
                     Button("Select .txt Files") {
-                        showingPicker = true  // Toggle to present
+                        showingPicker = true
                     }
                     .buttonStyle(.borderedProminent)
-                    .fileImporter(  // Attach to Button for scoped triggering
-                        isPresented: $showingPicker,  // Required binding label
-                        allowedContentTypes: [.plainText],  // Filter to .txt
-                        allowsMultipleSelection: true  // Enable multi-file
-                    ) { result in  // Now properly labeled as onCompletion
+                    .fileImporter(
+                        isPresented: $showingPicker,
+                        allowedContentTypes: [.plainText],
+                        allowsMultipleSelection: true
+                    ) { result in
                         switch result {
                         case .success(let urls):
                             print("DEBUG: fileImporter success with \(urls.count) URLs")
-                            viewModel.selectedURLs = Array(urls)  // Set to ViewModel
-                            Task {
-                                await viewModel.mergeFiles()
-                            }
+                            viewModel.selectedURLs = Array(urls)
+                            Task { await viewModel.mergeFiles() }
                         case .failure(let error):
                             print("DEBUG: fileImporter error: \(error)")
                             viewModel.errorMessage = error.localizedDescription
@@ -53,19 +53,41 @@ struct ContentView: View {
                         .frame(height: 300)
                     }
                     
-                    Button("Process with AI & Save to Firebase") {
+                    if viewModel.isProcessingAI {
+                        ProgressView("Generating with Vertex AI...")
+                    }
+                    
+                    if let output = viewModel.generatedOutput {
+                        Text("Generated Op Note & Codes:")
+                            .font(.headline)
+                            .padding(.top)
+                        
+                        ScrollView {
+                            Text(output)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.green.opacity(0.1))
+                                .cornerRadius(8)
+                        }
+                        .frame(height: 300)
+                    }
+                    
+                    Button(viewModel.generatedOutput == nil ? "Process with AI & Save to Firebase" : "Re-Process") {
+                        guard !isProcessing else { return }  // Debounce
+                        isProcessing = true
                         Task {
                             await viewModel.processProcedure()
+                            isProcessing = false
                         }
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(viewModel.mergedText.isEmpty || viewModel.isLoading)
+                    .disabled(viewModel.mergedText.isEmpty || viewModel.isProcessingAI)
                     
                     Button("Select More Files") {
                         showingPicker = true
                     }
                     .buttonStyle(.bordered)
-                    .fileImporter(  // Re-attach for "More Files" button too
+                    .fileImporter(
                         isPresented: $showingPicker,
                         allowedContentTypes: [.plainText],
                         allowsMultipleSelection: true
@@ -73,10 +95,8 @@ struct ContentView: View {
                         switch result {
                         case .success(let urls):
                             print("DEBUG: Additional files: \(urls.count)")
-                            viewModel.selectedURLs.append(contentsOf: Array(urls))  // Append to existing
-                            Task {
-                                await viewModel.mergeFiles()  // Re-merge
-                            }
+                            viewModel.selectedURLs.append(contentsOf: Array(urls))
+                            Task { await viewModel.mergeFiles() }
                         case .failure(let error):
                             viewModel.errorMessage = error.localizedDescription
                         }
